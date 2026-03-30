@@ -1,5 +1,6 @@
 import { generateCorrelationId } from './correlation'
 import { CORRELATION_ID_HEADER } from '@/config/constants'
+import { AUTH_BYPASS } from '@/config/flags'
 
 export interface NetOptions {
   token?: string
@@ -70,9 +71,9 @@ async function netFetchInternal<T>(
         return netFetchInternal<T>(url, init, options, true)
       }
 
-      // Both tokens exhausted — redirect to login
-      window.location.href = '/login'
-      // Throw so any pending .then() chains don't continue
+      // Both tokens exhausted — redirect to login (skipped in bypass/guest mode)
+      // TODO: RE-ENABLE AUTH — Remove AUTH_BYPASS check to restore redirect on session expiry
+      if (!AUTH_BYPASS) window.location.href = '/login'
       throw new ApiError(401, 'Session expired', headers.get(CORRELATION_ID_HEADER) ?? undefined)
     }
 
