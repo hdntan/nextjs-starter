@@ -1,13 +1,19 @@
 import { create } from 'zustand'
+import type { User } from '@/types/auth'
 
 interface AuthState {
-  accessToken: string | null
-  setAccessToken: (token: string) => void
-  clearAccessToken: () => void
+  user: User | null
+  /** False until the initial /api/auth/me check resolves — prevents auth flash on load */
+  isHydrated: boolean
+  setUser: (user: User) => void
+  clearUser: () => void
+  setHydrated: () => void
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  accessToken: null,
-  setAccessToken: (token) => set({ accessToken: token }),
-  clearAccessToken: () => set({ accessToken: null }),
+  user: null,
+  isHydrated: false,
+  setUser: (user) => set({ user }),
+  clearUser: () => set({ user: null }),
+  setHydrated: () => set({ isHydrated: true }),
 }))

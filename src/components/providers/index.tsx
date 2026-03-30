@@ -1,12 +1,12 @@
 'use client'
 
-import { SessionProvider } from './session-provider'
+import { AuthProvider } from './auth-provider'
 import { SWRProvider } from './swr-provider'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
+    <AuthProvider>
       <SWRProvider>{children}</SWRProvider>
-    </SessionProvider>
+    </AuthProvider>
   )
 }
