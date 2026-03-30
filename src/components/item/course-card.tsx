@@ -12,8 +12,10 @@ export function CourseCard({ variant, data }: CourseCardProps) {
   if (variant === 'sm') {
     return (
       <Card className="overflow-hidden">
-        <div className="aspect-video relative">
-          <Image src={data.thumbnailUrl} alt={data.title} fill className="object-cover" />
+        <div className="aspect-video relative bg-muted">
+          {data.thumbnailUrl && (
+            <Image src={data.thumbnailUrl} alt={data.title} fill className="object-cover" />
+          )}
         </div>
         <CardContent className="p-3">
           <p className="font-medium text-sm line-clamp-1">{data.title}</p>
@@ -25,8 +27,10 @@ export function CourseCard({ variant, data }: CourseCardProps) {
   if (variant === 'brick') {
     return (
       <Card className="flex overflow-hidden">
-        <div className="w-32 relative shrink-0">
-          <Image src={data.thumbnailUrl} alt={data.title} fill className="object-cover" />
+        <div className="w-32 relative shrink-0 bg-muted">
+          {data.thumbnailUrl && (
+            <Image src={data.thumbnailUrl} alt={data.title} fill className="object-cover" />
+          )}
         </div>
         <CardContent className="p-4 flex-1">
           <p className="font-medium line-clamp-1">{data.title}</p>
@@ -39,8 +43,10 @@ export function CourseCard({ variant, data }: CourseCardProps) {
   // md and lg
   return (
     <Card className="overflow-hidden">
-      <div className="aspect-video relative">
-        <Image src={data.thumbnailUrl} alt={data.title} fill className="object-cover" />
+      <div className="aspect-video relative bg-muted">
+        {data.thumbnailUrl && (
+          <Image src={data.thumbnailUrl} alt={data.title} fill className="object-cover" />
+        )}
       </div>
       <CardHeader className="p-4">
         <p className="font-medium line-clamp-2">{data.title}</p>

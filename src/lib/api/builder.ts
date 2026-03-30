@@ -15,14 +15,20 @@ export function buildApiClient(options: BuildApiClientOptions): ApiClient {
     post: <T>(path: string, body?: unknown) =>
       netFetch<T>(
         `${baseUrl}${path}`,
-        { method: 'POST', body: body ? JSON.stringify(body) : undefined },
+        {
+          method: 'POST',
+          body: body !== undefined && body !== null ? JSON.stringify(body) : undefined,
+        },
         { token }
       ),
 
     put: <T>(path: string, body?: unknown) =>
       netFetch<T>(
         `${baseUrl}${path}`,
-        { method: 'PUT', body: body ? JSON.stringify(body) : undefined },
+        {
+          method: 'PUT',
+          body: body !== undefined && body !== null ? JSON.stringify(body) : undefined,
+        },
         { token }
       ),
 

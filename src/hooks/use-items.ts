@@ -2,13 +2,12 @@
 
 import useSWR from 'swr'
 import { KEYS } from './keys'
-import type { ItemModel } from '@/types/content'
+import { createClientApiClient } from '@/lib/api/client'
+import { listItems, getItem } from '@/lib/api/services/items'
+import type { ContentModel } from '@/types/content'
 
 /**
  * SWR hook for items list.
- *
- * Usage in client component:
- *   const { items, isLoading, error } = useItems(initialData)
  *
  * RSC hydration pattern:
  *   // page.tsx (RSC)
@@ -17,14 +16,14 @@ import type { ItemModel } from '@/types/content'
  *
  *   // ItemsCatalog.tsx ('use client')
  *   const { items } = useItems(initialData)
+ *
+ * The fetcher calls the service layer so transforms always apply on revalidation.
  */
-export function useItems(initialData?: ItemModel[]) {
-  const { data, error, isLoading, mutate } = useSWR<ItemModel[]>(
+export function useItems(initialData?: ContentModel[]) {
+  const { data, error, isLoading, mutate } = useSWR<ContentModel[]>(
     KEYS.items.list,
-    null, // uses global fetcher from SWRProvider
-    {
-      fallbackData: initialData,
-    }
+    () => listItems(createClientApiClient()),
+    { fallbackData: initialData }
   )
 
   return {
@@ -35,10 +34,12 @@ export function useItems(initialData?: ItemModel[]) {
   }
 }
 
-export function useItem(id: string, initialData?: ItemModel) {
-  const { data, error, isLoading, mutate } = useSWR<ItemModel>(KEYS.items.detail(id), null, {
-    fallbackData: initialData,
-  })
+export function useItem(id: string, initialData?: ContentModel) {
+  const { data, error, isLoading, mutate } = useSWR<ContentModel>(
+    KEYS.items.detail(id),
+    () => getItem(createClientApiClient(), id),
+    { fallbackData: initialData }
+  )
 
   return {
     item: data ?? null,

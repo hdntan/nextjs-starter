@@ -4,26 +4,33 @@
 import { useItems } from '@/hooks/use-items'
 import { Shelf } from '@/components/shelf'
 import { ItemCard } from '@/components/item'
-import type { ItemModel } from '@/types/content'
+import type { ContentModel } from '@/types/content'
 
 interface ItemsCatalogProps {
-  initialData: ItemModel[]
+  initialData: ContentModel[]
 }
 
 export function ItemsCatalog({ initialData }: ItemsCatalogProps) {
   // SWR hydrates instantly with initialData (fallbackData)
   // Then revalidates in background for freshness
-  const { items, isLoading } = useItems(initialData)
+  const { items, isLoading, error } = useItems(initialData)
 
   if (isLoading && items.length === 0) {
     return null // DelayedSpinner handled by loading.tsx
   }
 
   return (
-    <Shelf variant="grid-3" title="All Items" cta={{ label: 'See all', href: '/items' }}>
-      {items.map((item) => (
-        <ItemCard key={item.id} variant="md" data={item} />
-      ))}
-    </Shelf>
+    <div className="space-y-2">
+      {error && (
+        <p className="text-sm text-muted-foreground">
+          Could not refresh data. Showing last known results.
+        </p>
+      )}
+      <Shelf variant="grid-3" title="All Items">
+        {items.map((item) => (
+          <ItemCard key={item.id} variant="md" data={item} />
+        ))}
+      </Shelf>
+    </div>
   )
 }

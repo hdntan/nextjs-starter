@@ -42,6 +42,3 @@ export interface ItemModel {
 }
 
 export type ContentModel = CourseModel | ArticleModel | EventModel | ItemModel
-
-export type ItemListModel = ItemModel[]
-export type ItemDetailModel = ItemModel

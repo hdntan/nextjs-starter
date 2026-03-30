@@ -11,10 +11,21 @@ interface ItemCardProps {
 }
 
 export function ItemCard({ variant, data, onClick }: ItemCardProps) {
-  const handleClick = onClick ? () => onClick(data) : undefined
+  if (!onClick) return renderCard(variant, data)
 
   return (
-    <div onClick={handleClick} className={onClick ? 'cursor-pointer' : undefined}>
+    <div
+      role="button"
+      tabIndex={0}
+      className="cursor-pointer"
+      onClick={() => onClick(data)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault() // prevent Space from scrolling the page
+          onClick(data)
+        }
+      }}
+    >
       {renderCard(variant, data)}
     </div>
   )
