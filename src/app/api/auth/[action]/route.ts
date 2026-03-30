@@ -81,11 +81,11 @@ async function handleMe(): Promise<NextResponse> {
   }).catch(() => null)
 
   if (!res || !res.ok) {
-    // Only clear auth cookies when the token is definitively invalid (401).
-    // Transient errors (503, 429) must not log the user out.
+    // On 401: clear the expired access_token but KEEP the refresh_token so the
+    // client can call /api/auth/refresh to obtain a new access_token.
+    // On transient errors (503, 429): clear nothing — don't log the user out.
     if (res?.status === 401) {
       cookieStore.delete(ACCESS_TOKEN)
-      cookieStore.delete(REFRESH_TOKEN)
     }
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
   }
