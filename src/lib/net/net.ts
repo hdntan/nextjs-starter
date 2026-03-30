@@ -17,10 +17,32 @@ export class ApiError extends Error {
   }
 }
 
-export async function netFetch<T>(
+// ─── Client-side refresh singleton ───────────────────────────────────────────
+// Module-level promise prevents concurrent 401s from triggering multiple
+// refresh calls (token reuse errors on rotation-enabled backends).
+// Only used in browser context (guarded by typeof window check below).
+
+let refreshPromise: Promise<boolean> | null = null
+
+function getOrStartRefresh(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = fetch('/api/auth/refresh', { method: 'POST' })
+      .then((res) => res.ok)
+      .catch(() => false)
+      .finally(() => {
+        refreshPromise = null
+      })
+  }
+  return refreshPromise
+}
+
+// ─── Core fetch ──────────────────────────────────────────────────────────────
+
+async function netFetchInternal<T>(
   url: string,
-  init: RequestInit = {},
-  options: NetOptions = {}
+  init: RequestInit,
+  options: NetOptions,
+  isRetry: boolean
 ): Promise<T> {
   const headers = new Headers(init.headers)
 
@@ -38,6 +60,22 @@ export async function netFetch<T>(
   const response = await fetch(url, { ...init, headers })
 
   if (!response.ok) {
+    // Client-side 401 intercept: attempt refresh then retry once.
+    // Guard: only in browser (server-side refresh is handled in createServerApiClient).
+    if (response.status === 401 && !isRetry && typeof window !== 'undefined') {
+      const refreshed = await getOrStartRefresh()
+
+      if (refreshed) {
+        // Retry original request — new cookies are auto-sent by the browser
+        return netFetchInternal<T>(url, init, options, true)
+      }
+
+      // Both tokens exhausted — redirect to login
+      window.location.href = '/login'
+      // Throw so any pending .then() chains don't continue
+      throw new ApiError(401, 'Session expired', headers.get(CORRELATION_ID_HEADER) ?? undefined)
+    }
+
     const body = (await response.json().catch(() => ({ message: response.statusText }))) as {
       message?: string
     }
@@ -49,4 +87,12 @@ export async function netFetch<T>(
   }
 
   return response.json() as Promise<T>
+}
+
+export async function netFetch<T>(
+  url: string,
+  init: RequestInit = {},
+  options: NetOptions = {}
+): Promise<T> {
+  return netFetchInternal<T>(url, init, options, false)
 }

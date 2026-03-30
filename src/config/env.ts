@@ -1,7 +1,10 @@
 import { z } from 'zod'
 
 const envSchema = z.object({
-  API_URL: z.string().url(),
+  API_URL: z
+    .string()
+    .url()
+    .transform((url) => url.replace(/\/$/, '')),
 })
 
 const result = envSchema.safeParse({

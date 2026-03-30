@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { SESSION_COOKIE } from '@/lib/auth/constants'
+import { ACCESS_TOKEN } from '@/lib/auth/constants'
 
 export function proxy(request: NextRequest) {
   // TODO: RE-ENABLE AUTH — Delete the next two lines to restore mandatory login
   const AUTH_BYPASS = true // DEV ONLY: allows unauthenticated access to all routes
   if (AUTH_BYPASS) return NextResponse.next()
 
-  const token = request.cookies.get(SESSION_COOKIE)
+  const token = request.cookies.get(ACCESS_TOKEN)
 
   if (!token) {
     return NextResponse.redirect(new URL('/login', request.url))

@@ -1,16 +1,13 @@
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { env } from '@/config/env'
-import { SESSION_COOKIE } from '@/lib/auth/constants'
+import {
+  ACCESS_TOKEN,
+  REFRESH_TOKEN,
+  ACCESS_COOKIE_OPTIONS,
+  REFRESH_COOKIE_OPTIONS,
+} from '@/lib/auth/constants'
 import type { User } from '@/types/auth'
-
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  path: '/',
-  maxAge: 60 * 60 * 24 * 7, // 7 days
-}
 
 // ─── Handlers ────────────────────────────────────────────────────────────────
 
@@ -42,12 +39,17 @@ async function handleLogin(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(error, { status: res.status })
   }
 
-  // Expected response: { token: string, user: User }
   // TODO: Adjust field names to match your backend contract
-  const data = (await res.json()) as { token: string; user: User }
+  // Expected: { accessToken: string, refreshToken: string, user: User }
+  const data = (await res.json()) as {
+    accessToken: string
+    refreshToken: string
+    user: User
+  }
 
   const cookieStore = await cookies()
-  cookieStore.set(SESSION_COOKIE, data.token, COOKIE_OPTIONS)
+  cookieStore.set(ACCESS_TOKEN, data.accessToken, ACCESS_COOKIE_OPTIONS)
+  cookieStore.set(REFRESH_TOKEN, data.refreshToken, REFRESH_COOKIE_OPTIONS)
 
   return NextResponse.json({ user: data.user })
 }
@@ -55,30 +57,36 @@ async function handleLogin(request: NextRequest): Promise<NextResponse> {
 async function handleLogout(): Promise<NextResponse> {
   const cookieStore = await cookies()
 
-  // TODO: Optionally call your backend logout endpoint here to invalidate the token server-side
-  // await fetch(`${env.API_URL}/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
+  // TODO: Optionally call your backend logout endpoint here to invalidate tokens server-side
+  // const token = cookieStore.get(ACCESS_TOKEN)?.value
+  // if (token) await fetch(`${env.API_URL}/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
 
-  cookieStore.delete(SESSION_COOKIE)
+  cookieStore.delete(ACCESS_TOKEN)
+  cookieStore.delete(REFRESH_TOKEN)
   return NextResponse.json({ success: true })
 }
 
 async function handleMe(): Promise<NextResponse> {
   const cookieStore = await cookies()
-  const token = cookieStore.get(SESSION_COOKIE)?.value
+  const token = cookieStore.get(ACCESS_TOKEN)?.value
 
   if (!token) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
   }
 
   // TODO: Replace /auth/me with your actual backend endpoint.
-  // Alternative: decode the JWT locally to avoid an extra network hop.
+  // Alternative: decode the JWT locally to avoid the extra network hop.
   const res = await fetch(`${env.API_URL}/auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
   }).catch(() => null)
 
   if (!res || !res.ok) {
-    // Token may be expired — clear it so the proxy redirects to login
-    cookieStore.delete(SESSION_COOKIE)
+    // Only clear auth cookies when the token is definitively invalid (401).
+    // Transient errors (503, 429) must not log the user out.
+    if (res?.status === 401) {
+      cookieStore.delete(ACCESS_TOKEN)
+      cookieStore.delete(REFRESH_TOKEN)
+    }
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
   }
 

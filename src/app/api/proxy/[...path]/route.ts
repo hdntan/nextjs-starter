@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { env } from '@/config/env'
-import { SESSION_COOKIE } from '@/lib/auth/constants'
+import { ACCESS_TOKEN } from '@/lib/auth/constants'
 
 type RouteContext = { params: Promise<{ path: string[] }> }
 
@@ -12,7 +12,7 @@ function isSafePath(segments: string[]): boolean {
 
 async function proxyRequest(request: NextRequest, context: RouteContext): Promise<NextResponse> {
   const cookieStore = await cookies()
-  const token = cookieStore.get(SESSION_COOKIE)?.value
+  const token = cookieStore.get(ACCESS_TOKEN)?.value
 
   if (!token) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
