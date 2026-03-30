@@ -8,7 +8,7 @@ Welcome to the next-starter documentation. This directory contains comprehensive
 
 ### Getting Started
 
-1. **New to the project?** Start with the [README](../README.md)
+1. **New to the project?** Start with the [Onboarding & Developer Guide](./onboarding-guide.md) ← start here
 2. **Need to understand architecture?** Read [System Architecture](./system-architecture.md)
 3. **Want to write code?** Review [Code Standards](./code-standards.md)
 4. **Exploring the codebase?** Check [Codebase Summary](./codebase-summary.md)
@@ -16,6 +16,21 @@ Welcome to the next-starter documentation. This directory contains comprehensive
 ---
 
 ## Documentation Files
+
+### [Onboarding & Developer Guide](./onboarding-guide.md)
+
+**Purpose**: End-to-end guide for new engineers joining the project.
+**Contains**:
+
+- BFF pattern, Dual-context Fetch Factory, HttpOnly cookie auth explained
+- Annotated folder structure with purpose of every directory
+- Full request lifecycle with Mermaid diagrams
+- Typed Variant System for Shelf and Item components
+- Step-by-step "First Ticket" tutorial: add a Promoted Course shelf end-to-end
+
+**Read if**: You are new to the project or need a guided walkthrough of the architecture.
+
+---
 
 ### [Project Overview & PDR](./project-overview-pdr.md)
 

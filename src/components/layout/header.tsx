@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { UserBadge } from './user-badge'
 
 export function Header() {
   return (
@@ -12,6 +13,10 @@ export function Header() {
             Home
           </Link>
         </nav>
+        {/* TODO: RE-ENABLE AUTH — UserBadge shows "Guest" when bypassed; remove or gate on auth */}
+        <div className="ml-auto">
+          <UserBadge />
+        </div>
       </div>
     </header>
   )
